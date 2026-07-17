@@ -1,3 +1,4 @@
+import { useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '@/store';
 import { fetchEmployees, setFilters } from '@/store/employeeSlice';
@@ -9,23 +10,36 @@ export const useEmployees = () => {
     (s: RootState) => s.employees
   );
 
-  const loadEmployees = (overrides?: EmployeeFilters) => {
-    const merged = { ...filters, ...overrides };
-    dispatch(setFilters(merged));
-    dispatch(fetchEmployees(merged));
-  };
+  // Keep a ref to the latest filters so callbacks don't go stale
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
-  const updateFilters = (newFilters: EmployeeFilters) => {
-    const merged = { ...filters, ...newFilters, page: 1 };
-    dispatch(setFilters(merged));
-    dispatch(fetchEmployees(merged));
-  };
+  const loadEmployees = useCallback(
+    (overrides?: EmployeeFilters) => {
+      const merged = { ...filtersRef.current, ...overrides };
+      dispatch(setFilters(merged));
+      dispatch(fetchEmployees(merged));
+    },
+    [dispatch]
+  );
 
-  const goToPage = (page: number) => {
-    const merged = { ...filters, page };
-    dispatch(setFilters(merged));
-    dispatch(fetchEmployees(merged));
-  };
+  const updateFilters = useCallback(
+    (newFilters: EmployeeFilters) => {
+      const merged = { ...filtersRef.current, ...newFilters, page: 1 };
+      dispatch(setFilters(merged));
+      dispatch(fetchEmployees(merged));
+    },
+    [dispatch]
+  );
+
+  const goToPage = useCallback(
+    (page: number) => {
+      const merged = { ...filtersRef.current, page };
+      dispatch(setFilters(merged));
+      dispatch(fetchEmployees(merged));
+    },
+    [dispatch]
+  );
 
   return { employees, pagination, filters, isLoading, error, loadEmployees, updateFilters, goToPage };
 };

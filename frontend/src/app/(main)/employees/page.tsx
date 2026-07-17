@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { employeeService } from '@/services/employee.service';
@@ -17,25 +17,28 @@ export default function EmployeesPage() {
   const { canAccess } = useAuth();
   const csvRef = useRef<HTMLInputElement>(null);
   const [csvLoading, setCsvLoading] = useState(false);
+  // Ensure initial load fires exactly once
+  const didMount = useRef(false);
 
   useEffect(() => {
+    if (didMount.current) return;
+    didMount.current = true;
     loadEmployees();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadEmployees]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm('Are you sure you want to delete this employee? This action can be undone within 30 days.')) return;
     try {
       await employeeService.deleteEmployee(id);
       toast.success('Employee deleted successfully');
-      loadEmployees(filters);
+      loadEmployees();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error.response?.data?.message || 'Failed to delete employee');
     }
-  };
+  }, [loadEmployees]);
 
-  const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCSVImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setCsvLoading(true);
@@ -45,7 +48,7 @@ export default function EmployeesPage() {
       if (result.failed > 0) {
         console.warn('CSV import errors:', result.errors);
       }
-      loadEmployees(filters);
+      loadEmployees();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error.response?.data?.message || 'CSV import failed');
@@ -53,7 +56,11 @@ export default function EmployeesPage() {
       setCsvLoading(false);
       if (csvRef.current) csvRef.current.value = '';
     }
-  };
+  }, [loadEmployees]);
+
+  const handleSearch = useCallback((value: string) => {
+    updateFilters({ search: value });
+  }, [updateFilters]);
 
   return (
     <div className="space-y-5 max-w-7xl mx-auto">
@@ -99,7 +106,7 @@ export default function EmployeesPage() {
         <SearchBar
           value={filters.search || ''}
           placeholder="Search by name, email or ID…"
-          onSearch={(v) => updateFilters({ search: v })}
+          onSearch={handleSearch}
         />
         <EmployeeFiltersBar filters={filters} onChange={updateFilters} />
       </div>
