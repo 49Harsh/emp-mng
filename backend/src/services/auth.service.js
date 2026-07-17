@@ -71,10 +71,10 @@ const logout = async (refreshToken) => {
 };
 
 /**
- * Get current user profile
+ * Get current user profile — returns plain user with employee as ID string (not populated)
  */
 const getMe = async (userId) => {
-  const user = await User.findById(userId).populate('employee');
+  const user = await User.findById(userId);
   if (!user) {
     throw Object.assign(new Error('User not found'), { statusCode: 404, isOperational: true });
   }

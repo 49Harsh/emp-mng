@@ -20,8 +20,13 @@ export default function ProfilePage() {
       setIsLoading(false);
       return;
     }
+    // user.employee can be a string ID or a populated object — always extract the string ID
+    const employeeId = typeof user.employee === 'object'
+      ? (user.employee as { _id: string })._id
+      : user.employee;
+
     employeeService
-      .getEmployee(user.employee)
+      .getEmployee(employeeId)
       .then(setEmployee)
       .catch(() => toast.error('Failed to load profile'))
       .finally(() => setIsLoading(false));

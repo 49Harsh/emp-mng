@@ -70,7 +70,13 @@ export default function EmployeeDetailPage() {
   const dept = employee.department as Department;
   const manager = employee.reportingManager as Employee | null;
   const imgSrc = employee.profileImage ? `${API_URL}/uploads/${employee.profileImage}` : null;
-  const isOwnProfile = user?.employee === employee._id || user?.email === employee.email;
+  // user.employee can be a string ID or populated object — normalize to string for comparison
+  const userEmployeeId = user?.employee
+    ? typeof user.employee === 'object'
+      ? (user.employee as { _id: string })._id
+      : user.employee
+    : null;
+  const isOwnProfile = userEmployeeId === employee._id || user?.email === employee.email;
   const canEdit = canAccess('employee:update') || (isOwnProfile && canAccess('employee:update_own'));
 
   return (
