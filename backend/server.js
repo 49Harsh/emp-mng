@@ -28,18 +28,24 @@ app.use(
   })
 );
 
-// Rate limiting
+// Rate limiting — relaxed in development, strict in production
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: env.NODE_ENV === 'production' ? 200 : 2000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => env.NODE_ENV === 'development', // disable entirely in dev
   message: { success: false, message: 'Too many requests, please try again later' },
 });
 app.use('/api/', limiter);
 
-// Auth rate limiter (stricter)
+// Auth rate limiter — only active in production
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => env.NODE_ENV !== 'production',
   message: { success: false, message: 'Too many login attempts, please try again later' },
 });
 app.use('/api/auth/login', authLimiter);
