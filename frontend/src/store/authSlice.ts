@@ -17,7 +17,7 @@ export const loginThunk = createAsyncThunk(
   async (credentials: LoginRequest, { rejectWithValue }) => {
     try {
       const data = await authService.login(credentials);
-      Cookies.set('accessToken', data.accessToken, { expires: 1 / 96 }); // 15 min
+      Cookies.set('accessToken', data.accessToken, { expires: 1 / 24 }); // 1 hour
       Cookies.set('refreshToken', data.refreshToken, { expires: 7 });
       return data;
     } catch (err: unknown) {

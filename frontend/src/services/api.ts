@@ -72,8 +72,8 @@ api.interceptors.response.use(
         const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
         const newToken: string = data.data.accessToken;
 
-        // Persist new token (15 min expiry)
-        Cookies.set('accessToken', newToken, { expires: 1 / 96 });
+        // Persist new token (1 hour expiry)
+        Cookies.set('accessToken', newToken, { expires: 1 / 24 });
 
         // Retry all queued requests with new token
         processQueue(newToken);

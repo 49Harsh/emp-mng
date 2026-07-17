@@ -10,22 +10,26 @@ const authenticate = async (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = verifyAccessToken(token);
+
+    let decoded;
+    try {
+      decoded = verifyAccessToken(token);
+    } catch (tokenErr) {
+      if (tokenErr.name === 'TokenExpiredError') {
+        return error(res, 'Access token expired', 401);
+      }
+      return error(res, 'Invalid token', 401);
+    }
 
     const user = await User.findById(decoded.userId).select('-password');
     if (!user || !user.isActive) {
+      // Always 401 here — the client should refresh and retry, not get a 403
       return error(res, 'User not found or account deactivated', 401);
     }
 
     req.user = user;
     next();
   } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return error(res, 'Access token expired', 401);
-    }
-    if (err.name === 'JsonWebTokenError') {
-      return error(res, 'Invalid token', 401);
-    }
     next(err);
   }
 };
