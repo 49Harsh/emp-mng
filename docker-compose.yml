@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: ems_mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      MONGO_INITDB_DATABASE: employee_management
+    networks:
+      - ems_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ems_backend
+    restart: unless-stopped
+    ports:
+      - '5000:5000'
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/employee_management
+      JWT_SECRET: ${JWT_SECRET:-change_this_in_production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_this_in_production_too}
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:3000
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mongo
+    networks:
+      - ems_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ems_frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000/api
+    depends_on:
+      - backend
+    networks:
+      - ems_net
+
+volumes:
+  mongo_data:
+  uploads_data:
+
+networks:
+  ems_net:
+    driver: bridge

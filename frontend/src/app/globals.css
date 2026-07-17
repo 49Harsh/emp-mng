@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 255 255 255;
+    --foreground: 15 23 42;
+  }
+  .dark {
+    --background: 15 23 42;
+    --foreground: 248 250 252;
+  }
+}
+
+body {
+  @apply bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-800;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-400 dark:bg-slate-600 rounded-full;
+}
+
+/* Form inputs */
+.input {
+  @apply w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 
+         text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500
+         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+         disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors
+         focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply btn bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500;
+}
+
+.btn-secondary {
+  @apply btn bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 
+         text-slate-700 dark:text-slate-200 focus:ring-slate-400;
+}
+
+.btn-danger {
+  @apply btn bg-red-600 hover:bg-red-700 text-white focus:ring-red-500;
+}
+
+.card {
+  @apply bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm;
+}
+
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-active {
+  @apply badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.badge-inactive {
+  @apply badge bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400;
+}
