@@ -31,6 +31,7 @@ const PERMISSIONS = {
     'csv:import',
   ],
   [ROLES.EMPLOYEE]: [
+    'employee:read',
     'employee:read_own',
     'employee:update_own',
     'organization:read',

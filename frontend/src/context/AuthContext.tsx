@@ -30,7 +30,7 @@ const ROLE_PERMISSIONS: Record<Role, string[]> = {
     'department:read', 'dashboard:read', 'organization:read',
     'csv:import',
   ],
-  employee: ['employee:read_own', 'employee:update_own', 'organization:read'],
+  employee: ['employee:read', 'employee:read_own', 'employee:update_own', 'organization:read'],
 };
 
 const AuthContext = createContext<AuthContextValue>({

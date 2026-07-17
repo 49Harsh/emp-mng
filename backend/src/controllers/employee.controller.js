@@ -4,7 +4,18 @@ const { success, created, paginated } = require('../utils/apiResponse');
 const getEmployees = async (req, res, next) => {
   try {
     const { employees, pagination } = await employeeService.getEmployees(req.query);
-    return paginated(res, employees, pagination, 'Employees retrieved');
+
+    // Strip salary from list results for employee-role users
+    const data =
+      req.user.role === 'employee'
+        ? employees.map((e) => {
+            const obj = e.toObject ? e.toObject() : { ...e };
+            delete obj.salary;
+            return obj;
+          })
+        : employees;
+
+    return paginated(res, data, pagination, 'Employees retrieved');
   } catch (err) {
     next(err);
   }
@@ -13,7 +24,18 @@ const getEmployees = async (req, res, next) => {
 const getEmployee = async (req, res, next) => {
   try {
     const employee = await employeeService.getEmployeeById(req.params.id);
-    return success(res, { employee }, 'Employee retrieved');
+
+    // Employees can only see their own salary; hide it when viewing others
+    const isOwnProfile =
+      req.user.role === 'employee' &&
+      employee.user?.toString() !== req.user._id.toString();
+
+    const data = employee.toObject ? employee.toObject() : { ...employee };
+    if (isOwnProfile) {
+      delete data.salary;
+    }
+
+    return success(res, { employee: data }, 'Employee retrieved');
   } catch (err) {
     next(err);
   }
